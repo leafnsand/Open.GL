@@ -1,4 +1,4 @@
-<?php
+ï»¿<?php
 	// Requested language
 	$lang = 'zh_CN';
 	$languages = explode("\n", file_get_contents("content/languages"));
@@ -22,7 +22,7 @@
 	$notfound = !preg_match("/^[a-z]+$/", $content) || !file_exists("content/articles-" . $lang . "/" . $content . ".md");
 	if ($notfound) {
 		$contentFile = "content/articles-" . $lang . "/notfound.md";
-		$contentTitle = "¶Î´íÎó";
+		$contentTitle = "æ®µé”™è¯¯";
 		$contentID = 80000000;
 	} else {
 		$contentFile = "content/articles-" . $lang . "/" . $content . ".md";
@@ -32,8 +32,8 @@
 	$contentSource = file_get_contents($contentFile);
 
 	// Cache mechanism
-	$last_modified_time = gmdate("r", max(filemtime('index.php'), filemtime($contentFile))) . " GMT";
-	$etag = md5(file_get_contents('index.php') . $contentSource);
+	$last_modified_time = gmdate("r", max(filemtime('index-zh_CN.php'), filemtime($contentFile))) . " GMT";
+	$etag = md5(file_get_contents('index-zh_CN.php') . $contentSource);
 
 	if ((isset($_SERVER["HTTP_IF_MODIFIED_SINCE"]) && $_SERVER["HTTP_IF_MODIFIED_SINCE"] == $last_modified_time) ||
 		(isset($_SERVER["HTTP_IF_NONE_MATCH"]) && str_replace('"', '', stripslashes($_SERVER['HTTP_IF_NONE_MATCH'])) == $etag))
@@ -53,10 +53,10 @@
 
 		<title>OpenGL - <?php print($contentTitle); ?></title>
 
-		<meta name="description" content="Ò»¸ö¿í·º, µ«ÊÊÓÃÓÚ³õÑ§ÕßÑ§Ï°ÔÚÖ÷Á÷Æ½Ì¨ÀûÓÃÏÖ´úOpenGL½øÐÐÓÎÏ·¿ª·¢µÄ½Ì³Ì." />
+		<meta name="description" content="ä¸€ä¸ªå®½æ³›, ä½†é€‚ç”¨äºŽåˆå­¦è€…å­¦ä¹ åœ¨ä¸»æµå¹³å°åˆ©ç”¨çŽ°ä»£OpenGLè¿›è¡Œæ¸¸æˆå¼€å‘çš„æ•™ç¨‹." />
 		<meta name="author" content="Alexander Overvoorde" />
-		<meta name="translator" content="Ä¾Ò¶É³×Ó" />
-		<meta name="keywords" content="opengl, opengl 3.2, deprecated, non-deprecated, tutorial, guide, cross-platform, game, games, graphics, sfml, sdl, glfw, glut, openglut, beginner, easy, ÆúÓÃ, Î´ÆúÓÃ, ½Ì³Ì, Ö¸ÄÏ, ¿çÆ½Ì¨, ÓÎÏ·, Í¼ÐÎ, Í¼ÐÎÑ§, ³õÑ§Õß, ÐÂÊÖ, Ò×ÓÃ" />
+		<meta name="translator" content="æœ¨å¶æ²™å­" />
+		<meta name="keywords" content="opengl, opengl 3.2, deprecated, non-deprecated, tutorial, guide, cross-platform, game, games, graphics, sfml, sdl, glfw, glut, openglut, beginner, easy, å¼ƒç”¨, æœªå¼ƒç”¨, æ•™ç¨‹, æŒ‡å—, è·¨å¹³å°, æ¸¸æˆ, å›¾å½¢, å›¾å½¢å­¦, åˆå­¦è€…, æ–°æ‰‹, æ˜“ç”¨" />
 
 		<link rel="shortcut icon" type="image/png" href="/media/tag.png" />
 		<link rel="stylesheet" type="text/css" href="/media/stylesheet.css" />
@@ -147,10 +147,10 @@
 						print(Markdown($contentSource));
 					?>
 				</article>
-				<!-- ¶àËµÆÀÂÛ¿ò start -->
+				<!-- å¤šè¯´è¯„è®ºæ¡† start -->
 					<div class="ds-thread" data-thread-key="<?php print( $contentID ); ?>" data-title="<?php print( $content ); ?>" data-url="http://leafnsand.com/opengl/?content=<?php print( $content ); ?>"></div>
-				<!-- ¶àËµÆÀÂÛ¿ò end -->
-				<!-- ¶àËµ¹«¹²JS´úÂë start (Ò»¸öÍøÒ³Ö»Ðè²åÈëÒ»´Î) -->
+				<!-- å¤šè¯´è¯„è®ºæ¡† end -->
+				<!-- å¤šè¯´å…¬å…±JSä»£ç  start (ä¸€ä¸ªç½‘é¡µåªéœ€æ’å…¥ä¸€æ¬¡) -->
 				<script type="text/javascript">
 				var duoshuoQuery = {short_name:"leafnsand"};
 					(function() {
@@ -162,7 +162,7 @@
 						 || document.getElementsByTagName('body')[0]).appendChild(ds);
 					})();
 					</script>
-				<!-- ¶àËµ¹«¹²JS´úÂë end -->
+				<!-- å¤šè¯´å…¬å…±JSä»£ç  end -->
 			</main>
 		</div>
 	</body>
