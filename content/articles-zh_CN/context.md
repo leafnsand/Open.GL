@@ -368,38 +368,38 @@ GLFW是专门为使用OpenGL定制的，所以它是迄今为止为了达到我�
 	Gluint buffer;
 	glGenBuffers(1, &buffer);
 
-首先，我肯定，被这一段代码吓到是很正常的。你可能暂时还不熟悉函数指针，但至少试着大致揣摩一下它在这个过程中是一个什么样的东西。你大概可以想象一下，在整个过程中定义函数原型和查找函数地址是非常繁琐的， You can imagine that going through this process of defining prototypes and finding addresses of functions is very tedious and in the end nothing more than a complete waste of time.
+首先，我肯定，被这一段代码吓到是很正常的。你可能暂时还不熟悉函数指针，但至少试着大致揣摩一下它在这个过程中是一个什么样的东西。你大概可以想象一下，在整个过程中定义函数原型和查找函数地址是非常繁琐的，到最后简直就是浪费时间。
 
-The good news is that there are libraries that have solved this problem for us. The most popular and best maintained library right now is *GLEW* and there's no reason for that to change anytime soon. Nevertheless, the alternative library *GLEE* works almost completely the same save for the initialization and cleanup code.
+好消息是，已经有工具库来为我们解决这些问题了。当今最流行并且维护的最好的库是*GLEW*，并且近期也没有任何理由去更换。尽管如此，还有一个替代品*GLEE*，在初始化和清理方面跟它几乎一样好用。
 
-If you haven't built GLEW yet, do so now. We'll now add GLEW to your project.
+如果你现在还没有编译GLEW，那么赶紧动手吧。我们现在将把GLEW加入我们的项目。
 
-* Start by linking your project with the static GLEW library in the `lib` folder. This is either `glew32s.lib` or `GLEW` depending on your platform.
-* Add the `include` folder to your include path.
+* 我们从链接`lib`文件夹里的静态GLEW库开始。根据你的平台不同，可能是`glew32s.lib`或者是`GLEW`。
+* 把`include`文件夹加入你的引用路径。
 
-Now just include the header in your program, but make sure that it is included before the OpenGL headers or the library you used to create your window.
+现在只需要在你的程序里引用头文件，但是记得在引用OpenGL头文件或者你用来创建窗体的工具库头文件之前引用
 
 	#define GLEW_STATIC
 	#include <GL/glew.h>
 
-Don't forget to define `GLEW_STATIC` either using this preprocessor directive or by adding the `-DGLEW_STATIC` directive to your compiler command-line parameters or project settings.
+不要忘记定义`GLEW_STATIC`，无论是定义一个宏`GLEW_STATIC`或是直接在编译命令或者项目设置中加入`-DGLEW_STATIC`。
 
-> If you prefer to dynamically link with GLEW, leave out the define and link with `glew32.lib` instead of `glew32s.lib` on Windows. Don't forget to include `glew32.dll` or `libGLEW.so` with your executable!
+> 如果你希望动态链接GLEW，就不用定义宏，在Windows下需要链接`glew32s.lib`而不是`glew32.lib`。不要忘记把`glew32.dll`或者`libGLEW.so`放到你的可执行文件同目录下！
 
-Now all that's left is calling `glewInit()` after the creation of your window and OpenGL context. The `glewExperimental` line is necessary to force GLEW to use a modern OpenGL method for checking if a function is available.
+现在只需要在创建好窗体和OpenGL上下文之后调用`glewInit()`了。如果要强制GLEW使用现代OpenGL的方法来检测某个函数是否可用，那么`glewExperimental`这一行是必须的。
 
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-Make sure that you've set up your project correctly by calling the `glGenBuffers` function, which was loaded by GLEW for you!
+调用GLEW为你载入的`glGenBuffers`函数来确定你已经正确设置好你的项目！
 
 	GLuint vertexBuffer;
 	glGenBuffers(1, &vertexBuffer);
 
 	printf("%u\n", vertexBuffer);
 
-Your program should compile and run without issues and display the number `1` in your console. If you need more help with using GLEW, you can refer to the [website](http://glew.sourceforge.net/install.html) or ask in the comments.
+你的程序编译运行应该不会报错并且在命令行打印出数字`1`。如果你需要更多的关于GLEW的帮助，你可以去[这里](http://glew.sourceforge.net/install.html)或者在评论中提问。
 
-Now that we're past all of the configuration and initialization work, I'd advise you to make a copy of your current project so that you won't have to write all of the boilerplate code again when starting a new project.
+现在你已经通过了所有的配置和初始化工作，我建议你复制一份你现在的项目，以免将来新建工程的时候又要重新写一遍这些模板代码。
 
-Now, let's get to [drawing things](/drawing)!
+现在，让我们开始[绘制图形](/drawing)吧!
