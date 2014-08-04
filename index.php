@@ -24,7 +24,11 @@
 	{
 		list($request_uri) = explode("?", $_SERVER['REQUEST_URI'], 2);
 		$uri = preg_replace('/\/+/','/', $request_uri);
-		list(,$content) = explode('/', $uri);
+		list(,$target_content) = explode('/', $uri);
+		if ($target_content)
+		{
+			$content = $target_content;
+		}
 	}
 	
 	// Determine how to load the requested content
