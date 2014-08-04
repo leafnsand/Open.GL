@@ -1,6 +1,6 @@
-<?php
+﻿<?php
 	// Requested language
-	$lang = 'en';
+	$lang = 'zh_CN';
 	$languages = explode("\n", file_get_contents("content/languages"));
 	if (isset($_GET['lang']) && in_array($_GET['lang'], $languages)) {
 		$lang = $_GET['lang'];
@@ -22,10 +22,12 @@
 	$notfound = !preg_match("/^[a-z]+$/", $content) || !file_exists("content/articles-" . $lang . "/" . $content . ".md");
 	if ($notfound) {
 		$contentFile = "content/articles-" . $lang . "/notfound.md";
-		$contentTitle = "Segmentation fault";
+		$contentTitle = "段错误";
+		$contentID = 80000000;
 	} else {
 		$contentFile = "content/articles-" . $lang . "/" . $content . ".md";
 		$contentTitle = $navitemTitles[$content];
+		$contentID = 80000001 + array_search($contentTitle, $navitemTitles);
 	}
 	$contentSource = file_get_contents($contentFile);
 
@@ -51,9 +53,10 @@
 
 		<title>OpenGL - <?php print($contentTitle); ?></title>
 
-		<meta name="description" content="An extensive, yet beginner friendly guide to using modern OpenGL for game development on all major platforms." />
+		<meta name="description" content="一个宽泛, 但适用于初学者学习在主流平台利用现代OpenGL进行游戏开发的教程." />
 		<meta name="author" content="Alexander Overvoorde" />
-		<meta name="keywords" content="opengl, opengl 3.2, deprecated, non-deprecated, tutorial, guide, cross-platform, game, games, graphics, sfml, sdl, glfw, glut, openglut, beginner, easy" />
+		<meta name="translator" content="木叶沙子" />
+		<meta name="keywords" content="opengl, opengl 3.2, deprecated, non-deprecated, tutorial, guide, cross-platform, game, games, graphics, sfml, sdl, glfw, glut, openglut, beginner, easy, 弃用, 未弃用, 教程, 指南, 跨平台, 游戏, 图形, 图形学, 初学者, 新手, 易用" />
 
 		<link rel="shortcut icon" type="image/png" href="/media/tag.png" />
 		<link rel="stylesheet" type="text/css" href="/media/stylesheet.css" />
@@ -76,26 +79,6 @@
 		<script type="text/javascript">
 			// Syntax highlighting
 			hljs.initHighlightingOnLoad();
-
-			// Disqus
-			var disqus_url = "http://open.gl/?content=<?php print( $content ); ?>";
-			var disqus_identifier = "<?php print( $content ); ?>";
-
-			// Google Analytics
-			var _gaq = _gaq || [];
-			_gaq.push(["_setAccount", "UA-25119105-1"]);
-			_gaq.push(["_setDomainName", "open.gl"]);
-			_gaq.push(["_setAllowHash", "false"]);
-			_gaq.push(["_trackPageview"]);
-
-			(function()
-			{
-				var ga = document.createElement("script");
-				ga.type = "text/javascript";
-				ga.async = true;
-				ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
-				var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
-			})();
 
 			// WebGL demos
 			var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
@@ -138,7 +121,7 @@
 							if ($navitem[0] == $content)
 								print( '<li class="selected">' . $navitem[1] . '</li>' . "\n" );
 							else
-								print( '<li><a href="/' . $navitem[0] . ($lang == 'en' ? '' : '/' . $lang) . '">' . $navitem[1] . '</a></li>' . "\n" );
+								print( '<li><a href="/' . $navitem[0] . '?lang=' . $lang . '">' . $navitem[1] . '</a></li>' . "\n" );
 						}
 					?>
 				</ul>
@@ -148,27 +131,11 @@
 					<div style="float: right">
 						<?php
 							foreach ($languages as $lang) {
-								print('<a href="/' . $content . ($lang == 'en' ? '' : '/' . $lang) . '"><img src="/media/' . $lang . '.png" alt="' . $lang . '" /></a> ');
+								print('<a href="/' . $content . '?lang=' . $lang .'"><img src="/media/' . $lang . '.png" alt="' . $lang . '" /></a> ');
 							}
 						?>
 					</div>
 				</blockquote>
-
-                <?php
-                    $userAgent = $_SERVER['HTTP_USER_AGENT'];
-                    if (strpos($userAgent, 'Android') === false && strpos($userAgent, 'Mobile') === false) {
-                ?>
-				<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                <ins class="adsbygoogle"
-                     style="display:inline-block;width:160px;height:600px"
-                     data-ad-client="ca-pub-4259747131061893"
-                     data-ad-slot="6972020941"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-                <?php
-                    }
-                ?>
 			</nav>
 
 			<!-- Content container -->
@@ -180,25 +147,22 @@
 						print(Markdown($contentSource));
 					?>
 				</article>
-
-				<?php
-					if (!$notfound)
-					{
-				?>
-
-				<!-- Disqus comments -->
-				<hr />
-				<aside id="disqus_thread"></aside>
+				<!-- 多说评论框 start -->
+					<div class="ds-thread" data-thread-key="<?php print( $contentID ); ?>" data-title="<?php print( $content ); ?>" data-url="http://leafnsand.com/opengl/?content=<?php print( $content ); ?>"></div>
+				<!-- 多说评论框 end -->
+				<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 				<script type="text/javascript">
-					var dsq = document.createElement("script");
-					dsq.type = "text/javascript";
-					dsq.async = true;
-					dsq.src = "http://opengl.disqus.com/embed.js";
-					document.getElementsByTagName("head")[0].appendChild( dsq );
-				</script>
-				<?php
-					}
-				?>
+				var duoshuoQuery = {short_name:"leafnsand"};
+					(function() {
+						var ds = document.createElement('script');
+						ds.type = 'text/javascript';ds.async = true;
+						ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+						ds.charset = 'UTF-8';
+						(document.getElementsByTagName('head')[0] 
+						 || document.getElementsByTagName('body')[0]).appendChild(ds);
+					})();
+					</script>
+				<!-- 多说公共JS代码 end -->
 			</main>
 		</div>
 	</body>
