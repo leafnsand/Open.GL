@@ -207,33 +207,33 @@ SDL有许多不同的模块，但是只是创建窗体和OpenGL上下文，我�
 	SDL_Quit();
 	return 0;
 
-The `SDL_Init` function takes a bitfield with the modules to load. The video module includes everything you need to create a window and an OpenGL context.
+`SDL_Init`函数根据一个位域作为参数表示需要加载那些模块。视频模块包含了创建窗体和OpenGL上下文所需的所有功能。
 
-Before doing anything else, first tell SDL that you want a forward compatible OpenGL 3.2 context:
+在做其他事情之前，先要告诉SDL你需要一个向前兼容的OpenGL 3.2上下文：
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-After that, create a window using the `SDL_CreateWindow` function.
+然后再通过调用`SDL_CreateWindow`函数创建窗体。
 
 	SDL_Window* window = SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
 
-The first argument specifies the title of the window, the next two are the X and Y position and the two after those are the width and height. If the position doesn't matter, you can specify `SDL_WINDOWPOS_UNDEFINED` or `SDL_WINDOWPOS_CENTERED` for the second and third argument. The final parameter specifies window properties like:
+第一个参数决定了窗体的标题，接着的两个参数是窗体的X，Y坐标，再接着的两个参数是窗体的宽和高。如果位置不重要，你可以传入`SDL_WINDOWPOS_UNDEFINED`或者`SDL_WINDOWPOS_CENTERED`作为第二个和第三个参数。最后一个参数指定了窗体的属性，例如：
 
-- *SDL_WINDOW_OPENGL* - Create a window ready for OpenGL.
-- *SDL_WINDOW_RESIZABLE* - Create a resizable window.
-- **Optional** *SDL_WINDOW_FULLSCREEN* - Create a fullscreen window.
+- *SDL_WINDOW_OPENGL* - 创建一个OpenGL窗体
+- *SDL_WINDOW_RESIZABLE* - 创建一个可调整大小的窗体
+- **可选** *SDL_WINDOW_FULLSCREEN* - 创建一个全屏窗体
 
-After you've created the window, you can create the OpenGL context:
+创建了窗体之后，你可以创建上下文：
 
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 	...
 	SDL_GL_DeleteContext(context);
 
-The context should be destroyed right before calling `SDL_Quit()` to clean up the resources.
+上下文应该在调用`SDL_Quit()`之前调用以销毁资源。
 
-Then comes the most important part of the program, the event loop:
+接着是程序最重要的部分，事件循环：
 
 	SDL_Event windowEvent;
 	while (true)
@@ -246,35 +246,35 @@ Then comes the most important part of the program, the event loop:
 		SDL_GL_SwapWindow(window);
 	}
 
-The `SDL_PollEvent` function will check if there are any new events that have to be handled. An event can be anything from a mouse click to the user moving the window. Right now, the only event you need to respond to is the user pressing the little X button in the corner of the window. By breaking from the main loop, `SDL_Quit` is called and the window and graphics surface are destroyed. `SDL_GL_SwapWindow` here takes care of swapping the front and back buffer after new things have been drawn by your application.
+`SDL_PollEvent`函数将会检查是否有新的事件需要处理。事件可能是鼠标点击或者用户移动窗体。现在，唯一需要你响应的时间是用户点击窗体角上的小红叉按钮。跳出了时间循环将会调用`SDL_Quit`，于是窗体和图形界面将会被销毁。`SDL_GL_SwapWindow`这里的作用是负责在应用程序绘制新的图形之后交换前后端缓冲区。
 
-If you have a fullscreen window, it would be preferable to use the escape key as a means to close the window.
+如果你是全屏窗体，应该优先选择`Esc`键作为关闭窗口的按键。
 
 	if (windowEvent.type == SDL_KEYUP &&
 		windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 
-When you run your application now, you should see something like this:
+当你运行你的应用程序的时候，你应该会看到如下表现：
 
 <img src="/media/img/c1_window.png" alt="" />
 
-Now that you have a window and a context, there's [one more thing](#Onemorething) that needs to be done.
+现在你已经有一个窗体和OpenGL上下文了，[还有一件事](#Onemorething)需要做。
 
 GLFW
 ========
 
-GLFW is tailored specifically for using OpenGL, so it is by far the easiest to use for our purpose.
+GLFW是专门为使用OpenGL定制的，所以它是迄今为止为了达到我们的目的最容易使用的。
 
-Building
+构建
 --------
 
-After you've downloaded the GLFW binaries package from the website or compiled the library yourself, you'll find the headers in the `include` folder and the libraries for your compiler in one of the `lib` folders.
+当你下载了GLFW的二进制包或者你自己编译了源码之后，你需要的文件都在`lib`和`include`文件夹下。
 
-- Add the appropriate `lib` folder to your library path and link with `GLFW`.
-- Add the `include` folder to your include path.
+- 把适当的`lib` 文件夹放入你的库路径下并且链接`GLFW`。
+- 把`include`文件夹加入你的引用路径。
 
-> You can also dynamically link with GLFW if you want to. Simply link with `GLFWDLL` and include the shared library with your executable.
+> 如果需要，你也可以动态链接GLFW库。只需要在预编译头中加入`GLFWDLL`并且把共享库文件放在你的可执行文件目录下。
 
-Here is a simple snippet of code to check your build configuration:
+为了确保你已经正确配置，试着编译运行下面几行代码：
 
 	#include <GLFW/glfw3.h>
 	#include <thread>
@@ -286,12 +286,12 @@ Here is a simple snippet of code to check your build configuration:
 	    glfwTerminate();
 	}
 
-It should show a console application and exit after a second. If you run into any trouble, just ask in the comments and you'll receive help.
+将会显示一个命令窗口并且在一秒后退出。如果你碰到了任何问题，请在下面留言，我将会替你答疑解惑。
 
-Code
+编码
 --------
 
-Start by simply including the GLFW header and define the entry point of the application.
+我们从包含GLFW头文件和定义应用程序入口开始。
 
 	#include <GLFW/glfw3.h>
 
@@ -300,13 +300,13 @@ Start by simply including the GLFW header and define the entry point of the appl
 		return 0;
 	}
 
-To use GLFW, it needs to be initialised when the program starts and you need to give it a chance to clean up when your program closes. The `glfwInit` and `glfwTerminate` functions are geared towards that purpose.
+为了使用GLFW，它必须在程序开始的时候进行初始化，并且在程序退出前进行清理。`glfwInit`和`glfwTerminate`两个函数就是干这个用的。
 
 	glfwInit();
 	...
 	glfwTerminate();
 
-The next thing to do is creating and configuring the window. Before calling `glfwCreateWindow`, we first set some options.
+下一件事就是创建并且配置窗体。在调用`glfwCreateWindow`之前，我们先要设置几个参数。
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -315,18 +315,18 @@ The next thing to do is creating and configuring the window. Before calling `glf
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
-	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
+	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // 窗口
+	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // 全屏
 
-You'll immediately notice the first three lines of code that are only relevant for this library. It is specified that we require the OpenGL context to support OpenGL 3.2 at the least. The `GLFW_OPENGL_PROFILE` option specifies that we want a context that only supports the new core functionality.
+你会发现前三行代码是仅仅针对这个工具库的。它决定了我们需要OpenGL上下文至少支持OpenGL 3.2。`GLFW_OPENGL_PROFILE`选项决定了我们需要一个支持新的核心函数的上下文。
 
-The first two parameters of glfwCreateWindow specify the width and height of the drawing surface and the third parameter specifies the window title. The fourth parameter should be set to `NULL` for windowed mode and `glfwGetPrimaryMonitor()` for fullscreen mode. The last parameter allows you to specify an existing OpenGL context to share resources like textures with. The `glfwWindowHint` function is used to specify additional requirements for a window.
+`glfwCreateWindow`的前两个参数决定了绘制层的宽和高，第三个参数决定了窗体的标题。窗口模式下第四个参数应该设置成`nullptr`，全屏模式下设置成`glfwGetPrimaryMonitor()`。最后一个参数允许你传入一个已经存在的OpenGL上下文来共享比如纹理之类的资源。`glfwWindowHint`函数是用来定义一些额外的窗体需求。
 
-After creating the window, the OpenGL context has to be made active:
+在创建好窗体后，OpenGL上下文应该这样设置为活动的：
 
 	glfwMakeContextCurrent(window);
 
-Next comes the event loop, which in the case of GLFW works a little differently than the other libraries. GLFW uses a so-called *closed* event loop, which means you only have to handle events when you need to. That means your event loop will look really simple:
+接下来就是事件循环，同时也是GLFW于其他工具库工作方式有所不同的地方。GLFW使用一个被称作*闭合*的事件循环，这意味着你只需要在必要的时候处理事件。也就是说你的事件循环看起来是如此简单的：
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -334,39 +334,41 @@ Next comes the event loop, which in the case of GLFW works a little differently 
 		glfwPollEvents();
 	}
 
-The only required functions in the loop are `glfwSwapBuffers` to swap the back buffer and front buffer after you've finished drawing and `glfwPollEvents` to retrieve window events. If you are making a fullscreen application, you should handle the escape key to easily return to the desktop.
+循环中仅需要调用函数`glfwSwapBuffers`，用来在完成绘制后交换前后端缓冲区，以及`glfwPollEvents`函数用来恢复窗口事件。如果你在写一个全屏显示的应用程序，你应该处理`Esc`键的按下来返回桌面。
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-If you want to learn more about handling input, you can refer to the [documentation](http://www.glfw.org/docs/3.0/group__input.html).
+如果你想学习更多的关于处理输入的功能，你可以参考[文档](http://www.glfw.org/docs/3.0/group__input.html).
+
+当你运行你的应用程序的时候，你应该会看到如下表现：
 
 <img src="/media/img/c1_window.png" alt="" />
 
-You should now have a window or a full screen surface with an OpenGL context. Before you can start drawing stuff however, there's [one more thing](#Onemorething) that needs to be done.
+现在你已经有一个窗体或者一个全屏的视图和OpenGL上下文了，在你开始绘制图形之前[还有一件事](#Onemorething)需要做。
 
-One more thing
+还有一件事
 ========
 
-Unfortunately, we can't just call the functions we need yet. This is because it's the duty of the graphics card vendor to implement OpenGL functionality in their drivers based on what the graphics card supports. You wouldn't want your program to only be compatible with a single driver version and graphics card, so we'll have to do something clever.
+很不幸，我们还不能就这样调用函数。这是因为显卡厂商的职责是在他们的显卡支持的硬件基础上实现OpenGL的功能。你不会希望你的的程序只能在一个驱动版本的显卡上运行，所以我们还需要做一些聪明的事。
 
-Your program needs to check which functions are available at runtime and link with them dynamically. This is done by finding the addresses of the functions, assigning them to function pointers and calling them. That looks something like this:
+你的程序需要在运行时检查什么功能是可用的并且动态的链接它们。这是通过查找函数的地址，把地址跟函数指针绑定，然后调用它来实现的。它看起来就像这样：
 
-	// Specify prototype of function
+	// 定义函数原型
 	typedef void (*GENBUFFERS) (GLsizei, GLuint*);
 
-	// Load address of function and assign it to a function pointer
+	// 加载函数的地址并且与指针绑定
 	GENBUFFERS glGenBuffers = (GENBUFFERS)wglGetProcAddress("glGenBuffers");
-	// or Linux:
+	// Linux:
 	GENBUFFERS glGenBuffers = (GENBUFFERS)glXGetProcAddress((const GLubyte *) "glGenBuffers");
-	// or OSX:
+	// OSX:
 	GENBUFFERS glGenBuffers = (GENBUFFERS)NSGLGetProcAddress("glGenBuffers");
 
-	// Call function as normal
+	// 像普通函数一样调用
 	Gluint buffer;
 	glGenBuffers(1, &buffer);
 
-Let me begin by asserting that it is perfectly normal to be scared by this snippet of code. You may not be familiar with the concept of function pointers yet, but at least try to roughly understand what is happening here. You can imagine that going through this process of defining prototypes and finding addresses of functions is very tedious and in the end nothing more than a complete waste of time.
+首先，我肯定，被这一段代码吓到是很正常的。你可能暂时还不熟悉函数指针，但至少试着大致揣摩一下它在这个过程中是一个什么样的东西。你大概可以想象一下，在整个过程中定义函数原型和查找函数地址是非常繁琐的， You can imagine that going through this process of defining prototypes and finding addresses of functions is very tedious and in the end nothing more than a complete waste of time.
 
 The good news is that there are libraries that have solved this problem for us. The most popular and best maintained library right now is *GLEW* and there's no reason for that to change anytime soon. Nevertheless, the alternative library *GLEE* works almost completely the same save for the initialization and cleanup code.
 
