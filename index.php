@@ -16,8 +16,17 @@
 
 	// Requested content
 	$content = $navitems[0][0];
-	if (isset($_GET["content"])) $content = $_GET["content"];
-
+	if (isset($_GET["content"]))
+	{
+		$content = $_GET["content"];
+	}
+	else
+	{
+		list($request_uri) = explode("?", $_SERVER['REQUEST_URI'], 2);
+		$uri = preg_replace('/\/+/','/', $request_uri);
+		list(,$content) = explode('/', $uri);
+	}
+	
 	// Determine how to load the requested content
 	$notfound = !preg_match("/^[a-z]+$/", $content) || !file_exists("content/articles-" . $lang . "/" . $content . ".md");
 	if ($notfound) {
