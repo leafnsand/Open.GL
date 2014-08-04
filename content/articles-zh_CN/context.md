@@ -1,13 +1,13 @@
-Window and OpenGL context
+窗体和OpenGL上下文
 ========
 
-Before you can start drawing things, you need to initialize OpenGL. This is done by creating an OpenGL context, which is essentially a state machine that stores all data related to the rendering of your application. When your application closes, the OpenGL context is destroyed and everything is cleaned up.
+在你绘制任何东西之前，你都必须先初始化OpenGL。初始化是通过创建一个OpenGL上下文来完成的。而上下文本质上是一个状态机，它储存了所有与你的应用程序渲染相关的数据。当你的应用程序关闭时，OpenGL上下文也很销毁掉并且释放掉。
 
-The problem is that creating a window and an OpenGL context is not part of the OpenGL specification. That means it is done differently on every platform out there! Developing applications using OpenGL is all about being portable, so this is the last thing we need. Luckily there are libraries out there that abstract this process, so that you can maintain the same codebase for all supported platforms.
+这其中有一个问题，事实上创建窗体和上下文并不是OpenGL标准的一部分。这意味着这个过程在不同的平台是截然不同的！但是我们使用OpenGL开发应用程序的目的却又在于保持可移植性，所以这是我们必须解决的一个问题。庆幸的是，网络上有许多工具库提炼了这个过程，让你可以针对所有库支持的平台只用维护一份代码。
 
-While the available libraries out there all have advantages and disadvantages, they do all have a certain program flow in common. You start by specifying the properties of the game window, such as the title and the size and the properties of the OpenGL context, like the [anti-aliasing](http://en.wikipedia.org/wiki/Anti-aliasing) level. Your application will then initiate the event loop, which contains an important set of tasks that need to be completed over and over again until the window closes. These tasks are are usually handling new window events like mouse clicks, updating the rendering state and then drawing.
+然而网络上的这些工具库都各有优点和缺点，并且他们的共同点是，都有着同样的一个程序流程。从指定游戏窗体的一些属性（例如标题，大小）和OpenGL上下文的属性（例如[抗锯齿](http://en.wikipedia.org/wiki/Anti-aliasing)级别）开始。接着你的应用程序将会启动事件循环，它包含了一些需要在应用程序关闭前不断重复完成的很重要的任务。这些任务通常是处理新的窗体事件，例如鼠标点击，更新渲染状态，绘制图形等等。
 
-This program flow would look something like this in pseudocode:
+这个程序流程类似下面的这段伪代码：
 
 	#include <libraryheaders>
 
@@ -30,66 +30,66 @@ This program flow would look something like this in pseudocode:
 		return 0;
 	}
 
-When rendering a frame, the results will be stored in an offscreen buffer known as the *back buffer* to make sure the user only sees the final result. The `presentGraphics()` call will copy the result from the back buffer to the visible window buffer, the *front buffer*. Every application that makes use of real-time graphics will have a program flow that comes down to this, whether it uses a library or native code.
+在某一帧的渲染过程中，渲染的结果将会存储在一个叫做*后端缓冲区*的不可见缓冲区中，用来保证用户只看到最终结果。`presentGraphics()`的调用将会把这些结果从不可见缓冲区中复制到叫做*前端缓冲*的可视窗体缓冲区中。只要应用程序是实时渲染的，无论它使用工具库还是平台相关的代码创建，都能归结成这样一个程序过程。
 
-By default, libraries will create an OpenGL context that supports the legacy functions. This is unfortunate, because we're not interested in those and they may become unavailable at some point in the future. The good news is that it is possible to inform the drivers that our application is ready for the future and does not depend on the old functions. The bad news is that at this moment only the GLFW library allows us to specify this. This little shortcoming doesn't have any negative consequences right now, so don't let it influence your choice of library too much, but the advantage of a so-called core profile context is that accidentally calling any of the old functions results in an invalid operation error to set you straight.
+默认情况下，工具库都会创建一个支持传统功能的OpenGL上下文。但这对于我们来说是不幸的，因为我们对这些也许未来会被废弃的东西不感兴趣。可幸的是我们可以告诉显卡驱动我们的应用程序是为未来准备的，并且不依赖于旧的函数。但不幸的是，现在只有GLFW是可以这样声明的。这一点点缺点现在不会带来任何消极的后果，所以不要因为它而过于影响你选择你的工具库，但是一个所谓的core profile上下文的优点是，如果不小心调用了旧的函数会返回一个无效操作的错误来让程序继续下去。
 
-Supporting resizable windows with OpenGL introduces some complexities as resources need to be reloaded and buffers need to be recreated to fit the new window size. It's more convenient for the learning process to not bother with such details yet, so we'll only deal with fixed size (fullscreen) windows for now.
+为了使OpenGL支持窗体大小的可调整，我们需要做很多复杂的处理，例如资源要被重新载入，缓冲区需要被重新创建来适应新的窗体大小。所以为了学习过程中更加方便，我们将不会关心这些细节，我们现在只针对固定大小（全屏）的窗体。
 
-Setup
+安装
 =====
 
-The first thing to do when starting a new OpenGL project is to dynamically link with OpenGL.
+新建一个OpenGL项目的第一件事就是动态链接OpenGL库。
 
-- **Windows**: Add `opengl32.lib` to your linker input
-- **Linux**: Include `-lGL` in your compiler options
-- **OS X**: Add `-framework OpenGL` to your compiler options
+- **Windows**: 把 `opengl32.lib` 加入到项目的链接输入
+- **Linux**: 在编译命令中加入 `-lGL`
+- **OS X**: 在编译命令中加入 `-framework OpenGL`
 
-<blockquote class="important">Make sure that you do <strong>not</strong> include <code>opengl32.dll</code> with your application. This file is already included with Windows and may differ per version, which will cause problems on other computers.</blockquote>
+<blockquote class="important">确保你<strong>没有</strong>把<code>opengl32.dll</code>放入你的项目中。这个文件在Windows中已经包含了，并且不同的Windows版本是有很大不同的。如果包含了这个文件，可能会在其他电脑上造成不可知的问题。</blockquote>
 
-The rest of the steps depend on which library you choose to use for creating the window and context.
+剩下的步骤根据你选择的创建窗体和上下文的工具库的不同而决定。
 
-Libraries
+工具库
 ========
 
-There are many libraries around that can create a window and an accompanying OpenGL context for you. There is no best library out there, because everyone has different needs and ideals. I've chosen to discuss the process for the three most popular libraries here for completeness, but you can find more detailed guides on their respective websites. All code after this chapter will be independent of your choice of library here.
+有很多工具库可以创建一个窗体并且同时创建好OpenGL上下文。这些工具库并没有一个最好的，因为每个人的需求和理想不同。这里我将针对三个最常用的工具库来示范完成创建的步骤，同时你可以去他们各自的网站上查找更多的使用方法。所有这章以后的代码将会根据你选择的工具库的不同而有所差异。
 
 [SFML](#SFML)
 --------
 
-SFML is a cross-platform C++ multimedia library that provides access to graphics, input, audio, networking and the system. The downside of using this library is that it tries hard to be an all-in-one solution. You have little to no control over the creation of the OpenGL context, as it was designed to be used with its own set of drawing functions.
+SFML是一个跨平台的C++多媒体库，它提供了访问图形，输入，音频，网络和操作系统的方法。使用这个库的缺点是，它力图成为一个集所有于一身的解决方案。你几乎无法控制OpenGL上下文的创建，因为它被设计成需要编程者使用它自己的一套绘图函数。
 
 [SDL](#SDL)
 --------
 
-SDL is also a cross-platform multimedia library, but targeted at C. That makes it a bit rougher to use for C++ programmers, but it's an excellent alternative to SFML. It supports more exotic platforms and most importantly, offers more control over the creation of the OpenGL context than SFML.
+SDL同样也是一个跨平台的多媒体库，但它是针对C的。这使得它对于C++程序员来说有些许难用，但是它是SFML的一个很好的替代品。它支持了一些更奇特的平台，最重要的是，它比SFML提供了更多的对于创建OpenGL上下文的控制。
 
 [GLFW](#GLFW)
 --------
 
-GLFW, as the name implies, is a C library specifically designed for use with OpenGL. Unlike SDL and SFML it only comes with the absolute necessities: window and context creation and input management. It offers the most control over the OpenGL context creation out of these three libraries.
+GLFW，正如它名字所说，是一个专门为使用OpenGL而设计的C语言库。与SDL和SFML不同的是，它只包含了一些必需的功能：窗体和上下文的创建、输入的管理。它是这三个库中提供了最多的对于OpenGL上下文创建的控制的工具库。
 
-Others
+其他
 --------
 
-There are a few other options, like [freeglut](http://freeglut.sourceforge.net/) and [OpenGLUT](http://openglut.sourceforge.net/), but I personally think the aforementioned libraries are vastly superior in control, ease of use and on top of that more up-to-date.
+还有一些其他的选择，比如[freeglut](http://freeglut.sourceforge.net/)和[OpenGLUT](http://openglut.sourceforge.net/)，但是我个人认为上述几个工具库在控制，易用和最重要的保持更新方面要更优。
 
 SFML
 ========
 
-The OpenGL context is created implicitly when opening a new window in SFML, so that's all you have to do. SFML also comes with a graphics package, but since we're going to use OpenGL directly, we don't need it.
+在SFML中，OpenGL上下文是在创建一个新窗体时一起创建的，所以你所要做的就是创建一个新窗体。SFML同时也提供了一个图形包，但是因为我们将直接使用OpenGL，所以我们不需要它。
 
-Building
+构建
 --------
 
-After you've downloaded the SFML binaries package or compiled it yourself, you'll find the needed files in the `lib` and `include` folders.
+当你下载了SFML的二进制包或者你自己编译了源码之后，你需要的文件都在`lib`和`include`文件夹下。
 
-- Add the `lib` folder to your library path and link with `sfml-system` and `sfml-window`. With Visual Studio on Windows, link with the `sfml-system-s` and `sfml-window-s` files in `lib/vc2008` instead.
-- Add the `include` folder to your include path.
+- 把`lib` 文件夹放入你的库路径下并且链接`sfml-system`和`sfml-window`。如果你使用Visual Studio，链接`lib/vc2008`文件夹下的`sfml-system-s`和`sfml-window-s`作为替代。
+- 把`include`文件夹加入你的引用路径。
 
-> The SFML libraries have a simple naming convention for different configurations. If you want to dynamically link, simply remove the `-s` from the name, define `SFML_DYNAMIC` and copy the shared libraries. If you want to use the binaries with debug symbols, additionally append `-d` to the name.
+> SFML针对不同的配置有一个简单的命名约定。如果你需要动态链接，只需要从名字里去掉`-s`，定义宏`SFML_DYNAMIC`然后复制共享库。如果你要跟调试符号一起使用二进制，还要另外在名字中加上`-d`。
 
-To verify that you've done this correctly, try compiling and running the following code:
+为了确保你已经正确配置，试着编译运行下面几行代码：
 
 	#include <SFML/System.hpp>
 
@@ -99,12 +99,12 @@ To verify that you've done this correctly, try compiling and running the followi
 		return 0;
 	}
 
-It should show a console application and exit after a second. If you run into any trouble, you can find more detailed information for [Visual Studio](http://sfml-dev.org/tutorials/2.1/start-vc.php), [Code::Blocks](http://sfml-dev.org/tutorials/2.1/start-cb.php) and [gcc](http://sfml-dev.org/tutorials/2.1/start-linux.php) in the tutorials on the SFML website.
+将会显示一个命令窗口并且在一秒后退出。如果你碰到了任何问题，在SFML的网站上可以找到[Visual Studio](http://sfml-dev.org/tutorials/2.1/start-vc.php)，[Code::Blocks](http://sfml-dev.org/tutorials/2.1/start-cb.php) 和[gcc](http://sfml-dev.org/tutorials/2.1/start-linux.php)的相关详细信息。
 
-Code
+代码
 --------
 
-Start by including the window package and defining the entry point of your application.
+我们从包含window包的头文件和定义应用程序入口开始。
 
 	#include <SFML/Window.hpp>
 
@@ -113,13 +113,13 @@ Start by including the window package and defining the entry point of your appli
 		return 0;
 	}
 
-A window can be opened by creating a new instance of `sf::Window`. The basic constructor takes an `sf::VideoMode` structure, a title for the window and a window style. The `sf::VideoMode` structure specifies the width, height and optionally the pixel depth of the window. Finally, the requirement for a fixed size window is specified by overriding the default style of `Style::Resize|Style::Close`. It is also possible to create a fullscreen window by passing `Style::Fullscreen` as window style.
+实例化`sf::Window`会创建新的窗体。基础的构造函数的参数是`sf::VideoMode`结构，窗体标题和窗体风格。`sf::VideoMode`定义了宽和高还有可选的窗体像素深度。最后，创建一个固定宽高的窗体需要用`Style::Resize|Style::Close`覆盖默认的窗体风格。也可以通过传入`Style::Fullscreen`来创建一个全屏窗体。
 
 	sf::Window window(sf::VideoMode(800, 600), "OpenGL", sf::Style::Close);
 
-The constructor can also take an `sf::WindowSettings` structure that allows you to specify the anti-aliasing level and the accuracy of the depth and stencil buffers. The latter two will be discussed later, so you don't have to worry about these yet.
+在构造函数中你还可以通过`sf::WindowSettings`结构来定义抗锯齿级别以及深度和模板缓冲区的精确度。后面两个概念会在后面提到，你现在可以暂时不用关心。
 
-When running this, you'll notice that the application instantly closes after creating the window. Let's add the event loop to deal with that.
+当你运行的时候，你会发现应用程序在创建窗体之后就退出了。让我们加入事件循环来解决这个问题。
 
 	bool running = true;
 	while (running)
@@ -131,7 +131,7 @@ When running this, you'll notice that the application instantly closes after cre
 		}
 	}
 
-When something happens to your window, an event is posted to the event queue. There is a wide variety of events, including window size changes, mouse movement and key presses. It's up to you to decide which events require additional action, but there is at least one that needs to be handled to make your application run well.
+当你的窗体发生一些变化时，一个事件会传入这个事件队列。事件的种类很多，包括窗体的大小变化，鼠标移动和键盘按键。哪些事件需要做特殊处理是取决于你的，但是为了让应用程序正常运行至少有一个事件需要处理。
 
 	switch (windowEvent.type)
 	{
@@ -140,38 +140,38 @@ When something happens to your window, an event is posted to the event queue. Th
 		break;
 	}
 
-When the user attempts to close the window, the `Closed` event is fired and we act on that by exiting the application. Try removing that line and you'll see that it's impossible to close the window by normal means. If you prefer a fullscreen window, you should add the escape key as a means to close the window:
+当用户视图关闭这个窗体时，`Closed`事件会被触发，我们这样处理可以保证应用程序会退出。你可以尝试删除这一行，然后会发现无法正常关闭窗体了。如果你需要全屏窗体，你应该增加`Esc`键按下作为关闭窗体的功能：
 
 	case sf::Event::KeyPressed:
 		if (windowEvent.key.code == sf::Keyboard::Escape)
 			running = false;
 		break;
 
-You have your window and the important events are acted upon, so you're now ready to put something on the screen. After drawing something, you can swap the back buffer and the front buffer with `window.display()`.
+现在你已经创建好窗体并且对重要的事件做了处理了，也就是说你现在可以把东西显示在屏幕上了。在绘制了一些东西之后，你可以调用`window.display()`来交换前端缓冲区和后端缓冲区。
 
-When you run your application, you should see something like this:
+当你运行你的应用程序的时候，你应该会看到如下表现：
 
 <img src="/media/img/c1_window.png" alt="" />
 
-Note that SFML allows you to have multiple windows. If you want to make use of this feature, make sure to call `window.setActive()` to activate a certain window for drawing operations.
+SFML允许你拥有多个窗口。如果你想要使用这个特效，别忘了调用`window.setActive()`来激活一个窗口来进行绘制操作。
 
-Now that you have a window and a context, there's [one more thing](#Onemorething) that needs to be done.
+现在你已经有一个窗体和OpenGL上下文了，[还有一件事](#Onemorething)需要做。
 
 SDL
 ========
 
-SDL comes with many different modules, but for creating a window with an accompanying OpenGL context we're only interested in the video module. It will take care of everything we need, so let's see how to use it.
+SDL有许多不同的模块，但是只是创建窗体和OpenGL上下文，我们只需要关心视频模块。它会接管所有我们需要的事情，让我们看看怎么使用它。
 
-Building
+构建
 --------
 
-After you've downloaded the SDL binaries or compiled them yourself, you'll find the needed files in the `lib` and `include` folders.
+当你下载了SDL的二进制包或者你自己编译了源码之后，你需要的文件都在`lib`和`include`文件夹下。
 
-- Add the `lib` folder to your library path and link with `SDL2` and `SDL2main`.
-- SDL uses dynamic linking, so make sure that the shared library (`SDL2.dll`, `SDL2.so`) is with your executable.
-- Add the `include` folder to your include path.
+- 把`lib` 文件夹放入你的库路径下并且链接`SDL2`和`SDL2main`。
+- SDL使用动态链接，所以确保动态引用库（`SDL2.dll`，`SDL2.so`）和你的可执行文件在同一目录下。
+- 把`include`文件夹加入你的引用路径。
 
-To verify that you're ready, try compiling and running the following snippet of code:
+为了确保你已经正确配置，试着编译运行下面几行代码：
 
 	#include <SDL.h>
 
@@ -185,12 +185,12 @@ To verify that you're ready, try compiling and running the following snippet of 
 		return 0;
 	}
 
-It should show a console application and exit after a second. If you run into any trouble, you can find more [detailed information](http://wiki.libsdl.org/FrontPage) for all kinds of platforms and compilers in the tutorials on the web.
+将会显示一个命令窗口并且在一秒后退出。如果你碰到了任何问题，你可以在SDL的[页面](http://wiki.libsdl.org/FrontPage)上找的各个平台和编译器的详细信息。
 
-Code
+编码
 --------
 
-Start by defining the entry point of your application and include the headers for SDL.
+我们从包含SDL头文件和定义应用程序入口开始。
 
 	#include <SDL.h>
 	#include <SDL_opengl.h>
@@ -200,7 +200,7 @@ Start by defining the entry point of your application and include the headers fo
 		return 0;
 	}
 
-To use SDL in an application, you need to tell SDL which modules you need and when to unload them. You can do this with two lines of code.
+要在你的程序中使用SDL，你需要告诉SDL哪几个模块需要用到，以及什么时候需要移除掉他们。以下两行代码可以解决这个问题。
 
 	SDL_Init(SDL_INIT_VIDEO);
 	...

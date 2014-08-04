@@ -1,6 +1,6 @@
 introduction/序言
 context/创建上下文
-drawing/画多边形
+drawing/绘制多边形
 textures/纹理
 transformations/转换
 depthstencils/深度和模板
