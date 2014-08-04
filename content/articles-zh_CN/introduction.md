@@ -1,25 +1,25 @@
-Introduction
+序言
 ========
 
-This guide will teach you the basics of using OpenGL to develop modern graphics applications. There are a lot of other guides on this topic, but there are some major points where this guide differs from those. We will not be discussing any of the old parts of the OpenGL specification. That means you'll be taught how to implement things yourself, instead of using deprecated functions like `glBegin` and `glLight`. Anything that is not directly related to OpenGL itself, like creating a window and loading textures from files, will be done using a few small libraries.
+这是一个教你使用OpenGL开发现代图形程序的基础教程。有很多关于这一主题的其他教程，但是这个教程与它们有很多不同点。我们将不会讨论任何与OpenGL旧规范相关的内容。这意味着，你将要学习着如何自己处理这些事情，而不是使用一些废弃的函数，例如`glBegin`和`glLight`。任何与OpenGL本身不相关的任务，例如创建一个窗口和从文件中加载纹理，都会通过使用一些小的工具库来实现。
 
-To show you how much it pays off to do things yourself, this guide also contains a lot of interactive examples to make it both fun and easy to learn all the different aspects of using a low-level graphics library like OpenGL!
+为了让你看到自己处理这些事情是会获得多少成就，这个教程包含了许多生动的例子。这些例子会让你在学习使用像OpenGL这样的低级图形库的各个方面时觉得更加好玩和简单。
 
-As an added bonus, you always have the opportunity to ask questions at the end of each chapter in the comments section. I'll try to answer as many questions as possible, but always remember that there are plenty of people out there who are willing to help you with your issues. Make sure to help us help you by specifying your platform, compiler, the relevant code section, the result you expect and what is actually happening.
+作为附加的奖励，你可以在每章教程后的评论部分提出问题。我会尽可能回答所有的提问，同时你也要知道，在网络上还有着大量的人乐于帮助你解决你的问题。为了让我们更好的帮助你，请说明你的平台，编译器，相关的代码段，你想要的结果以及碰到了什么问题。
 
-Prerequisites
+准备工作
 ========
 
-Before we can take off, you need to make sure you have all the things you need.
+在你开始学习之前，你需要确认一下你做好了以下几个准备。
 
-* A reasonable amount of experience with C++
-* Graphics card [compatible](http://en.wikipedia.org/wiki/OpenGL#OpenGL_3.2) with OpenGL 3.2
-* [SFML](http://www.sfml-dev.org/), [GLFW](http://www.glfw.org/) or [SDL](http://www.libsdl.org/) for creating the context and handling input
-* [GLEW](http://glew.sourceforge.net/) to use newer OpenGL functions
-* [GLM](http://glm.g-truc.net/) for vectors and matrices
+* 一定的C++基础
+* 与OpenGL 3.2[兼容](http://en.wikipedia.org/wiki/OpenGL#OpenGL_3.2)的显卡
+* 创建窗口和上下文以及处理输入的工具库，例如：[SFML](http://www.sfml-dev.org/)，[GLFW](http://www.glfw.org/) 或者 [SDL](http://www.libsdl.org/)
+* 用来使用较新的OpenGL函数的工具库[GLEW](http://glew.sourceforge.net/)
+* 用来操作数组和矩阵的工具库[GLM](http://glm.g-truc.net/)
 
-Context creation will be explained for *SFML*, *GLFW* and *SDL*, so use whatever library suites you best. See the next chapter for the differences between the three if you're not sure which one to use.
+教程将会介绍如何使用*SFML*，*GLFW*和*SDL*来创建上下文，你可以选择一个合适的库来使用。如果你不是很确定应该选择哪一个，下一章将会介绍这三个库的不同之处。
 
-> You also have the option of creating the context yourself using Win32, Xlib or Cocoa, but your code will not be portable anymore. That means you can not use the same code for all platforms.
+> 你同样可以选择用Win32，Xlib，Cocoa的函数来自己创建上下文，但是你的代码将变得不可移植。这意味着你将不能在所有的平台上使用相同的代码。
 
-If you've got everything you need, let's [begin](/context).
+如果你已经准备就绪，我们就[开始](/context)吧！
