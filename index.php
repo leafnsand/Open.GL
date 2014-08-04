@@ -121,7 +121,7 @@
 	<body>
 		<div id="page">
 			<!-- Work in progress ribbon -->
-			<a href="https://github.com/Overv/Open.GL"><img id="ribbon" src="/media/ribbon_fork.png" alt="Fork me!" /></a>
+			<a href="https://github.com/leafnsand/Open.GL"><img id="ribbon" src="/media/ribbon_fork.png" alt="Fork me!" /></a>
 
 			<!-- Navigation items -->
 			<input type="checkbox" id="nav_toggle" />
