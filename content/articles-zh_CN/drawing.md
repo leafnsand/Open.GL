@@ -1,93 +1,93 @@
-The graphics pipeline
+图形管道
 ========
 
-By learning OpenGL, you've decided that you want to do all of the hard work yourself. That inevitably means that you'll be thrown in the deep, but once you understand the essentials, you'll see that doing things *the hard way* doesn't have to be so difficult after all. To top that all, the exercises at the end of this chapter will show you the sheer amount of control you have over the rendering process by doing things the modern way!
+学习OpenGL就决定了你必须自己动手处理所有的困难。也就是说你将在血与暗的深渊里挣扎，不过一旦你领会到了要领，你就会意识到处理底层(*the hard way*)并不是那么艰难。这章结尾的练习将会让你知道，在使用现代OpenGL处理渲染的过程中，你将会有多少的控制力。
 
-The *graphics pipeline* covers all of the steps that follow each other up on processing the input data to get to the final output image. I'll explain these steps with help of the following illustration.
+*图形管道*这一章涵盖了从输入数据得到最终图像的所有步骤。我将会以下面这张图的流程解释这些步骤。
 
 <img src="/media/img/c2_pipeline.png" alt="" />
 
-It all begins with the *vertices*, these are the points from which shapes like triangles will later be constructed. Each of these points is stored with certain attributes and it's up to you to decide what kind of attributes you want to store. Commonly used attributes are 3D position in the world and texture coordinates.
+最一开始是*顶点矩阵*，它们来自我们将要构建的图形的顶点，比如三角形。矩阵中的每个顶点的都会存储一种特定的属性，具体是使用哪一种属性是由你决定的。一般使用的属性是世界里的3D位置和纹理坐标。
 
-The *vertex shader* is a small program running on your graphics card that processes every one of these input vertices individually. This is where the perspective transformation takes place, which projects vertices with a 3D world position onto your 2D screen! It also passes important attributes like color and texture coordinates further down the pipeline.
+*顶点着色器*是运行在你的显卡上的一小段程序，它会单独处理每个输入的顶点矩阵里的顶点。这是处理透视变换的地方，也就是用来把3D世界里的点显示在2D屏幕上的方式！同时也会把一些重要的属性例如颜色和纹理坐标通过管道往下传递。
 
-After the input vertices have been transformed, the graphics card will form triangles, lines or points out of them. These shapes are called *primitives* because they form the basis of more complex shapes. There are some additional drawing modes to choose from, like triangle strips and line strips. These reduce the number of vertices you need to pass if you want to create objects where each next primitive is connected to the last one, like a continuous line consisting of several segments.
+在输入的顶点矩阵通过变换处理了之后，显卡将会形成三角形，线段或者其他的点。这些图形被称作*图元（primitives）*，因为他们是更复杂的图形的基础。还有一些其他的可选择的绘图方式，比如三角形带，系带。如果你需要创建的图形是每个下一个图元都连接到最后一个的，就像一条由几个线段组成的连续曲线，这种方式能减少你需要生成的矩阵的大小。
 
-The following step, the *geometry shader*, is completely optional and was only recently introduced. Unlike the vertex shader, the geometry shader can output more data than comes in. It takes the primitives from the shape assembly stage as input and can either pass a primitive through down to the rest of the pipeline, modify it first, completely discard it or even replace it with other primitive(s). Since the communication between the GPU and the rest of the PC is relatively slow, this stage can help you reduce the amount of data that needs to be transferred. With a voxel game for example, you could pass vertices as point vertices, along with an attribute for their world position, color and material and the actual cubes can be produced in the geometry shader with a point as input!
+接下来的步骤，*几何着色器*，是完全可选的，并且在最近这个概念才被引入。不像顶点着色器，几何着色器可以输出比输入更多的数据。它在形状组装阶段把图元作为输入，它可以在把图元往下传递给后面管道之前处理图元，丢弃图元,甚至替换成其他图元。由于GPU和PC其他部分的通信相对较慢，这个阶段可以帮助你减少需要传递的数据。以像素游戏为例，你可以把包含了在世界中的位置，颜色和材质的矩阵作为输入传递给几何着色器来产生实际的数据集。
 
-After the final list of shapes is composed and converted to screen coordinates, the rasterizer turns the visible parts of the shapes into pixel-sized *fragments*. The vertex attributes coming from the vertex shader or geometry shader are interpolated and passed as input to the fragment shader for each fragment. As you can see in the image, the colors are smoothly interpolated over the fragments that make up the triangle, even though only 3 points were specified.
+在最终的图形列表被产生并且转换成屏幕坐标了之后，光栅会把图形的可见部分转化成以像素为单位的*片段*。从顶点着色器或者几何着色器中得到的顶点属性将会被插入片段中作为输入并且交给片段着色器处理。正如你可以在图片中看到的，即使只指定了三个点，颜色也被均匀的插入到了片段中组成了这个三角形。
 
-The *fragment shader* processes each individual fragment along with its interpolated attributes and should output the final color. This is usually done by sampling from a texture using the interpolated texture coordinate vertex attributes or simply outputting a color. In more advanced scenarios, there could also be calculations related to lighting and shadowing and special effects in this program. The shader also has the ability to discard certain fragments, which means that a shape will be see-through there.
+*片段着色器*处理每个单独的片段和插入在其中的属性并且输出最终的颜色。通常是通过用插入的纹理坐标顶点属性从纹理中取样或者直接简单的输出一个颜色来完成的。在更复杂的情况下，也有可能进行灯光和阴影或者特效的计算处理。着色器同时也有着丢弃某些片段的能力，这意味着这某些图形可以被处理成半透的。
 
-Finally, the end result is composed from all these shape fragments by blending them together and performing depth and stencil testing. All you need to know about these last two right now, is that they allow you to use additional rules to throw away certain fragments and let others pass. For example, if one triangle is obscured by another triangle, the fragment of the closer triangle should end up on the screen.
+最后，最终的结果将会通过将这些图形片段混合在一起而生成并且进行深度和模板测试。关于最后这两点你只需要知道这是允许你使用其他更多的规则来扔掉某些特定片段而让其他的通过的方式。例如，如果一个三角形被另一个三角形覆盖，较近的三角形的片段将会在屏幕覆盖显示。
 
-Now that you know how your graphics card turns an array of vertices into an image on the screen, let's get to work!
+现在你知道你的显卡是如何把顶点矩阵变换成屏幕上的一幅图片的了，让我们开始动手吧！
 
-Vertex input
+顶点输入
 ========
 
-The first thing you have to decide on is what data the graphics card is going to need to draw your scene correctly. As mentioned above, this data comes in the form of vertex attributes. You're free to come up with any kind of attribute you want, but it all inevitably begins with the *world position*. Whether you're doing 2D graphics or 3D graphics, this is the attribute that will determine where the objects and shapes end up on your screen in the end.
+你要确定的第一件事就是，显卡需要什么样的数据来让你正确地绘制场景。正如上面所提到的，数据来自于顶点的属性。你可以想出各种各样的你想要的属性，但是这些都难免要在*世界位置*的基础上。不论你是在处理2D图形还是3D图形，这都是会决定物体和图形将最终在屏幕上什么位置的属性。
 
-> **Device coordinates**
+> **设备坐标**
 >
-> When your vertices have been processed by the pipeline outlined above, their coordinates will have been transformed into *device coordinates*. Device X and Y coordinates are mapped to the screen between -1 and 1.
+> 当你的顶点矩阵被上面所述的管道处理的时候，他们的坐标将会被变换成*设备坐标*。设备屏幕的坐标的X和Y坐标都被映射到-1到1之间。
 >
 > <br /><span style="text-align: center; display: block"><img src="/media/img/c2_dc.png" alt="" style="display: inline" /> <img src="/media/img/c2_dc2.png" alt="" style="display: inline" /></span><br />
 >
-> Just like a graph, the center has coordinates `(0,0)` and the y axis is positive above the center. This seems unnatural because graphics applications usually have `(0,0)` in the top-left corner and `(width,height)` in the bottom-right corner, but it's an excellent way to simplify 3D calculations and to stay resolution independent.
+> 就想一个图形，中间的这个点的坐标是`(0,0)`并且y轴是中间以上为正。这个看起来不是很自然因为图形程序通常以左上角为`(0,0)`并且右下角的坐标为`(width,height)`，但是这是简化3D计算的最好方式并且能保持与分辨率无关。
 
-The triangle above consists of 3 vertices positioned at `(0,0.5)`, `(0.5,-0.5)` and `(-0.5,-0.5)` in clockwise order. It is clear that the only variation between the vertices here is the position, so that's the only attribute we need. Since we're passing the device coordinates directly, an X and Y coordinate suffices for the position.
+上面的三角形由顺时针方向的三个顶点确定：`(0,0.5)`，`(0.5,-0.5)`和`(-0.5,-0.5)`。很明显这里顶点的唯一差别就是位置，所以这是我们所需要的唯一属性。由于我们是直接传递设备坐标的，而X，Y来表示坐标就足够了。
 
-OpenGL expects you to send all of your vertices in a single array, which may be confusing at first. To understand the format of this array, let's see what it would look like for our triangle.
+OpenGL要求你把所有的顶点通过一个数组传递，一开始看起来会比较困惑。为了理解数组的格式，让我们看看对于我们的三角形它会是什么样子。
 
 	float vertices[] = {
-		 0.0f,  0.5f, // Vertex 1 (X, Y)
-		 0.5f, -0.5f, // Vertex 2 (X, Y)
-		-0.5f, -0.5f  // Vertex 3 (X, Y)
+		 0.0f,  0.5f, // 顶点 1 (X, Y)
+		 0.5f, -0.5f, // 顶点 2 (X, Y)
+		-0.5f, -0.5f  // 顶点 3 (X, Y)
 	};
 
-As you can see, this array should simply be a list of all vertices with their attributes packed together. The order in which the attributes appear doesn't matter, as long as it's the same for each vertex. The order of the vertices doesn't have to be sequential (i.e. the order in which shapes are formed), but this requires us to provide extra data in the form of an element buffer. This will be discussed at the end of this chapter as it would just complicate things for now.
+正如你看到的，数组就是所有顶点和顶点属性的列表集合。属性排列的顺序并不重要，只需要每个顶点都是一样的即可。顶点的顺序不一定是连续的（即，其中的形状所形成的顺序），但是这会要求我们提供额外的数据来确定元素缓冲的格式。这将会在本章的最后进行讨论，因为现在这只会把事情变得更复杂。
 
-The next step is to upload this vertex data to the graphics card. This is important because the memory on your graphics card is much faster *and* you won't have to send the data again every time your scene needs to be rendered (about 60 times per second).
+下一步是把这些顶点数据上传到显卡。这一步非常重要因为显卡的内存更快并且你不必每次渲染屏幕（大约60次每秒）的时候都上传一遍数据。
 
-This is done by creating a *Vertex Buffer Object* (VBO):
+这是通过创建一个*顶点缓冲区*（Vertex Buffer Object，VBO）来完成的：
 
 	GLuint vbo;
-	glGenBuffers(1, &vbo); // Generate 1 buffer
+	glGenBuffers(1, &vbo); // 创建1个缓冲区
 
-The memory is managed by OpenGL, so instead of a pointer you get a positive number as a reference to it. `GLuint` is simply a cross-platform substitute for `unsigned int`, just like `GLint` is one for `int`. You will need this number to make the VBO active and to destroy it when you're done with it.
+这段内存是由OpenGL管理的，所以你将得到一个作为内存引用的正整数而不是一个内存指针。`GLuint`是一个跨平台的`unsigned int`的替代，同样`GLint`是`int`的替代。你在激活VBO时将会用到这个整数，直到销毁掉你才不需要它。
 
-To upload the actual data to it you first have to make it the active object by calling `glBindBuffer`:
+在上传数据之前你需要调用`glBindBuffer`来让它激活：
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-As hinted by the `GL_ARRAY_BUFFER` enum value there are other types of buffers, but they are not important right now. This statement makes the VBO we just created the active `array buffer`. Now that it's active we can copy the vertex data to it.
+类似`GL_ARRAY_BUFFER`，还有其他的枚举值来创建其他类型的缓冲区，但是它们现在并不重要。这段声明创建了活动的`array buffer`。现在我们能复制顶点数据到缓冲区中了。
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-Notice that this function doesn't refer to the id of our VBO, but instead to the active array buffer. The second parameter specifies the size in bytes. The final parameter is very important and its value depends on the `usage` of the vertex data. I'll outline the ones related to drawing here:
+注意到这个函数并不需要VBO的id，但是需要传入数据数组。第二个参数确定了字节数。最后一个参数很重要，它的值要根据顶点数据的用途来确定。下面我列出了几个跟渲染相关的值：
 
-- `GL_STATIC_DRAW`: The vertex data will be uploaded once and drawn many times (e.g. the world).
-- `GL_DYNAMIC_DRAW`: The vertex data will be changed from time to time, but drawn many times more than that.
-- `GL_STREAM_DRAW`: The vertex data will change almost every time it's drawn (e.g. user interface).
+- `GL_STATIC_DRAW`：顶点数据只会上传一次并且绘制很多次（例如，世界）。
+- `GL_DYNAMIC_DRAW`：顶点数据会时不时改变，但是会被绘制比改变次数更多的次数。
+- `GL_STREAM_DRAW`：顶点数据在每次绘制时都会改变（例如，用户界面）。
 
-This usage value will determine in what kind of memory the data is stored on your graphics card for the highest efficiency. For example, VBOs with `GL_STREAM_DRAW` as type may store their data in memory that allows faster writing in favour of slightly slower drawing.
+不同的用途将会决定数据存储在显卡里的什么样的内存中以提高性能。例如，以`GL_STREAM_DRAW`为类型的VBOs会存储在内存中以允许快速写入而稍慢的绘制。
 
-The vertices with their attributes have been copied to the graphics card now, but they're not quite ready to be used yet. Remember that we can make up any kind of attribute we want and in any order, so now comes the moment where you have to explain to the graphics card how to handle these attributes. This is where you'll see how flexible modern OpenGL really is.
+带有属性的顶点数据现在被复制到了显卡了，但是他们暂时还不能使用。还记得我们可以以任意的顺序拼装数组，并且可以加入任何我们需要的属性吗？所以现在我们需要告诉显卡应该要如何处理这些属性了。与此同时，你也将会看到现代OpenGL到底是怎样的灵活了。
 
-Shaders
+着色器
 ========
 
-As discussed earlier, there are three shader stages your vertex data will pass through. Each shader stage has a strictly defined purpose and in older versions of OpenGL, you could only slightly tweak what happened and how it happened. With modern OpenGL, it's up to us to instruct the graphics card what to do with the data. This is why it's possible to decide per application what attributes each vertex should have. You'll have to implement both the vertex and fragment shader to get something on the screen, the geometry shader is optional and is discussed [later](geometry).
+前面我们讨论过，你的顶点数据将会经过三个阶段的着色器处理。在旧版本的OpenGL中每个着色器阶段都定义了严格的目的，你只能稍微控制顶点数据发生了什么以及是如何发生的。但在现代OpenGL中，是由我们来告诉显卡要怎么处理数据的。这也就是为什么我们可以决定每个应用程序需要什么样的顶点属性。你将必须要编写顶点和片段着色器来让屏幕上显示一些东西，几何着色器是可选的，而我们将在[后面](geometry)讨论。
 
-Shaders are written in a C-style language called GLSL (OpenGL Shading Language). OpenGL will compile your program from source at runtime and copy it to the graphics card. Each version of OpenGL has its own version of the shader language with availability of a certain feature set and we will be using GLSL 1.50. This version number may seem a bit off when we're using OpenGL 3.2, but that's because shaders were only introduced in OpenGL 2.0 as GLSL 1.10. Starting from OpenGL 3.3, this problem was solved and the GLSL version is the same as the OpenGL version.
+着色器是用一种被称作GLSL（OpenGl Shading Language）的C风格的语言。OpenGL将会在运行时从源代码编译出你的程序，并且复制到显卡。每个版本的OpenGL都有它对应版本的着色器语言以带来某些特定的新特性支持，而我们将会使用GLSL 1.50。这个版本号相比我们使用的OpenGL 3.3可能能看起来有些老，但那是因为着色器语言只在OpenGL 2.0时发布了GLSL 1.10。从OpenGL 3.3开始，这个问题将会得到解决，而GLSL版本号将会跟OpenGL版本号同步。
 
-Vertex shader
+顶点着色器
 --------
 
-The vertex shader is a program on the graphics card that processes each vertex and its attributes as they appear in the vertex array. Its duty is to output the final vertex position in device coordinates and to output any data the fragment shader requires. That's why the 3D transformation should take place here. The fragment shader depends on attributes like the color and texture coordinates, which will usually be passed from input to output without any calculations.
+顶点着色器是运行在显卡上的一段程序，它用来处理顶点数组里的每个顶点和它的属性。它的职责是输入最终的设备顶点坐标并且输出片段着色器需要的任何数据。这就是为什么3D变化应该在这里进行处理。片段着色器以来与一些类似颜色和纹理坐标的属性，而通常这些数据都是直接从输入复制到输出而不经过任何运算。
 
-Remember that our vertex position is already specified as device coordinates and no other attributes exist, so the vertex shader will be fairly bare bones.
+还记得我们的顶点坐标已经是设备坐标了，并且我们没有任何属性，所以顶点着色器将会很简短。
 
 	#version 150
 
@@ -98,23 +98,23 @@ Remember that our vertex position is already specified as device coordinates and
 		gl_Position = vec4(position, 0.0, 1.0);
 	}
 
-The `#version` preprocessor directive is used to indicate that the code that follows is GLSL 1.50 code. Next, we specify that there is only one attribute, the position. Apart from the regular C types, GLSL has built-in vector and matrix types identified by `vec*` and `mat*` identifiers. The type of the values within these constructs is always a `float`. The number after `vec` specifies the number of components (x, y, z, w) and the number after `mat` specifies the number of rows /columns. Since the position attribute consists of only an X and Y coordinate, `vec2` is perfect.
+`#version`的预处理指令是用来说明接下来的这段代码是GLSL 1.50代码。接下来我们定义了只有一个属性，位置。除了常规的C类型，GLSL还定义了以`vec*`和`mat*`声明的内置的向量和矩阵类型。这些结构中的值都是`float`。`vec`后的数字确定了(x, y, z, w)中组件的个数，而`mat`后的数字定义了行/列的个数。因为位置属性只提供了X和Y坐标，所以`vec2`是最适用的。
 
-> You can be quite creative when working with these vertex types. In the example above a shortcut was used to set the first two components of the `vec4` to those of `vec2`. These two lines are equal:
+> 你可以用相当灵巧的方式处理这些顶点类型。上面的例子在使用`vec2`设置`vec4`前两个值时使用一个捷径。下面这两行是相同的：
 >
 >     gl_Position = vec4(position, 0.0, 1.0);
 >     gl_Position = vec4(position.x, position.y, 0.0, 1.0);
 >
-> When you're working with colors, you can also access the individual components with `r`, `g`, `b` and `a` instead of `x`, `y`, `z` and `w`. This makes no difference and can help with clarity.
+> 当你在处理颜色数据的时候，你也同样能获取到单独的`r`，`g`，`b`和`a`，类似于`x`，`y`，`z`和`w`。这没有任何区别并且更加清晰。
 
-The final position of the vertex is assigned to the special `gl_Position` variable, because the position is needed for primitive assembly and many other built-in processes. For these to function correctly, the last value `w` needs to have a value of `1.0f`. Other than that, you're free to do anything you want with the attributes and we'll see how to output those when we add color to the triangle later in this chapter.
+最后的顶点位置会赋值给`gl_Position`变量，因为位置需要图元组装和很多其他内置的处理。为了让程序正常运行，最后一个值`w`需要赋值为`1.0f`。除了这个，你可以自由的使用属性做任何处理，在这章我们将会看到在给三角形加入了颜色之后如何输出。
 
-Fragment shader
+片段着色器
 --------
 
-The output from the vertex shader is interpolated over all the pixels on the screen covered by a primitive. These pixels are called fragments and this is what the fragment shader operates on. Just like the vertex shader it has one mandatory output, the final color of a fragment. It's up to you to write the code for computing this color from vertex colors, texture coordinates and any other data coming from the vertex shader.
+顶点着色器的输出将会插入屏幕上所有被图元覆盖的像素。这些像素被称作片段，同时也是片段着色器处理的东西。类似顶点着色器，它也有一个强制性的输出值，最终的片段颜色。是由你来编写代码来通过顶点颜色，纹理坐标和任何其他从顶点着色器输入的数据来计算片段颜色的。
 
-Our triangle only consists of white pixels, so the fragment shader simply outputs that color every time:
+我们的三角形只有白色的像素，所以片段着色器只需要每次都简单的输出这个颜色：
 
 	#version 150
 
@@ -125,85 +125,85 @@ Our triangle only consists of white pixels, so the fragment shader simply output
 		outColor = vec4(1.0, 1.0, 1.0, 1.0);
 	}
 
-You'll immediately notice that we're not using some built-in variable for outputting the color, say `gl_FragColor`. This is because a fragment shader can in fact output multiple colors and we'll see how to handle this when actually loading these shaders. The `outColor` variable uses the type `vec4`, because each color consists of a red, green, blue and alpha component. Colors in OpenGL are generally represented as floating point numbers between `0.0` and `1.0` instead of the common `0` and `255`.
+你肯定注意到了我们没有使用叫做`gl_FragColor`内置的变量来输入颜色。这是因为片段着色器实际上可以多个颜色，我们将会看到如何在加载这些着色器的时候处理这个。`outColor`变量是`vec4`类型的，因为每个颜色由红，绿，蓝和透明度组成。OpenGL中的颜色是用`0.0`到`1.0`之间的浮点数表示的，而不是`0`到`255`。
 
-Compiling shaders
+编译着色器
 --------
 
-Compiling shaders is easy once you have loaded the source code (either from file or as a hard-coded string). Just like vertex buffers, it starts with creating a shader object and loading data into it.
+只要你加载了源代码之后（无论是通过文件还是硬编码字符串），编译着色器就很简单了。类似顶点缓冲，它通过创建一个着色器元素得到，并且上传数据。
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 
-Unlike VBOs, you can simply pass a reference to shader functions instead of making it active or anything like that. The `glShaderSource` function can take multiple source strings in an array, but you'll usually have your source code in one `char` array. The last parameter can contain an array of source code string lengths, passing `NULL` simply makes it stop at the null terminator.
+不同于VBOs，你可以简单的传入一个引用给着色器函数而不用激活它或者其他类似处理。`glShaderSource`可以接受一个由多个源码字符串组成的数组，但是通常你不会把源码放在一个`char`数组里。最后一个参数可以传入数组的长度，使用`NULL`会简单的以空字符串作为结尾。
 
-All that's left is compiling the shader into code that can be executed by the graphics card now:
+现在只需要编译这段着色器以得到可以在显卡上运行的代码了：
 
 	glCompileShader(vertexShader);
 
-Be aware that if the shader fails to compile, e.g. because of a syntax error, `glGetError` will **not** report an error! See the block below for info on how to debug shaders.
+要注意如果着色器编译失败了，比如语法错误，`glGetError`**得不到**错误！下面这段代码可以检查着色器是否便以失败。
 
-> **Checking if a shader compiled successfully**
+> **检查一段着色器代码是否编译正确**
 >
 >     GLint status;
 >     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
 >
-> If `status` is equal to `GL_TRUE`, then your shader was compiled successfully.
-> <br /><br />
-> **Retrieving the compile log**
+> 如果`status`等于`GL_TRUE`，那么你的着色器代码编译通过了。
+> <br/><br/>
+> **检索编译log**
 >
 >     char buffer[512];
 >     glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
 >
-> This will store the first 511 bytes + null terminator of the compile log in the specified buffer. The log may also report useful warnings even when compiling was successful, so it's useful to check it out from time to time when you develop your shaders.
+> 这个函数会保存编译log的前511字节加上一个空结束字符到指定的缓存中。及时编译成功，这个log也会报告一些有用的警告信息，所以在你开发着色器的时候时不时检查一下log是很有用的。
 
-The fragment shader is compiled in exactly the same way:
+片段着色器也是以同样的方式编译：
 
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShader);
 
-Again, be sure to check if your shader was compiled successfully, because it will save you from a headache later on.
+再次，记得检查你的着色器是否编译正确，因为这会让你待会儿不会头疼。
 
-Combining shaders into a program
+着色器与程序结合
 --------
 
-Up until now the vertex and fragment shaders have been two separate objects. While they've been programmed to work together, they aren't actually connected yet. This connection is made by creating a *program* out of these two shaders.
+到现在顶点着色器和片段着色器还是两个分开的部分。然而他们是要共同工作的，只是他们还没连接到一起。这个连接是通过创建一个着色器之外的*程序*来完成的。
 
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 
-Since a fragment shader is allowed to write to multiple buffers, you need to explicitly specify which output is written to which buffer. This needs to happen before linking the program. However, since this is 0 by default and there's only one output right now, the following line of code is not necessary:
+由于一个片段着色器是可以被写入到多个缓冲中的，你需要之处哪一个输出是为哪一段缓冲的。这需要在链接程序之前完成。然后由于默认是0而且现在只有一个输出，所以下面这一行代码不是必须的：
 
 	glBindFragDataLocation(shaderProgram, 0, "outColor");
 
-After attaching both the fragment and vertex shaders, the connection is made by *linking* the program. It is allowed to make changes to the shaders after they've been added to a program (or multiple programs!), but the actual result will not change until a program has been linked again. It is also possible to attach multiple shaders for the same stage (e.g. fragment) if they're parts forming the whole shader together. A shader object can be deleted with `glDeleteShader`, but it will not actually be removed before it has been detached from all programs with `glDetachShader`.
+在附着上顶点和片段着色器之后，连接是通过*链接*程序来完成的。在添加到一个（或多个）程序之后我们仍可以对着色器进行修改，但是实际的结果并不会改变只到重新链接程序。同样也可以针对同样的阶段添加多个着色器（例如，片段着色阶段），如果需要他们一起组成整个着色器。着色器可以通过`glDeleteShader`来删除，但是只有在在所有依附的程序上调用了`glDetachShader`才会真正被移除。
 
 	glLinkProgram(shaderProgram);
 
-To actually start using the shaders in the program, you just have to call:
+要真正在程序中使用着色器，只需要这样：
 
 	glUseProgram(shaderProgram);
 
-Just like a vertex buffer, only one program can be active at a time.
+类似顶点缓冲，同时只有一个程序能被激活。
 
-Making the link between vertex data and attributes
+在顶点数据和属性间建立链接
 --------
 
-Although we have our vertex data and shaders now, OpenGL still doesn't know how the attributes are formatted and ordered. You first need to retrieve a reference to the `position` input in the vertex shader:
+虽然我们现在已经有了顶点数据和着色器了，但是OpenGL仍然不知道这些属性是什么样的格式已经是怎么排序的。你需要先检索输入`position`在顶点着色器中的引用。
 
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
 
-The location is a number depending on the order of the input definitions. The first and only input `position` in this example will always have location 0.
+地址是一个与输入定义顺序相关的数字。在这个例子中，第一个并且是唯一一个的输入`position`将一直都是地址0。
 
-With the reference to the input, you can specify how the data for that input is retrieved from the array:
+有了输入的引用，你可以指定这个输入的数据要怎么从数组中索引了：
 
 	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-The first parameter references the input. The second parameter specifies the number of values for that input, which is the same as the number of components of the `vec`. The third parameter specifies the type of each component and the fourth parameter specifies whether the input values should be normalized between `-1.0` and `1.0` (or `0.0` and `1.0` depending on the format) if they aren't floating point numbers.
+第一个是输入的引用。第二个参数指定了这个输入需要的数的个数，也就是`vec`成员的个数。第三个参数指定了每个成员的类型，第四个参数指定了是否需要把输入的值归一化至`-1.0`和`1.0`之间（或者某些格式是`0.0`到`1.0`之间）如果它们不是浮点数。
 
-The last two parameters are arguably the most important here as they specify how the attribute is laid out in the vertex array. The first number specifies the *stride*, or how many bytes are between each position attribute in the array. The value 0 means that there is no data in between. This is currently the case as the position of each vertex is immediately followed by the position of the next vertex. The last parameter specifies the *offset*, or how many bytes from the start of the array the attribute occurs. Since there are no other attributes, this is 0 as well.
+最后两个参数可以说是这里最重要的，因为它们定义了属性在顶点数组中是怎么排列的。第一个数字指定了*步长（stride）*，也就是数组中每个位置属性间隔了多少位。0意味着中间没有数据。在目前的情况下每个顶点的位置都是紧跟着下一个顶点的位置的。最后一个参数指定了*偏移（offset）*，也就是从数组最开始经过多少字节才有参数出现。由于现在没有其他的参数，所以也是0。
 
 It is important to know that this function will store not only the stride and the offset, but also the VBO that is currently bound to `GL_ARRAY_BUFFER`. That means that you don't have to explicitly bind the correct VBO when the actual drawing functions are called. This also implies that you can use a different VBO for each attribute.
 
