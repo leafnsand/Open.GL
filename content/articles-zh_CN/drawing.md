@@ -50,7 +50,7 @@ OpenGL要求你把所有的顶点通过一个数组传递，一开始看起来�
 
 下一步是把这些顶点数据上传到显卡。这一步非常重要因为显卡的内存更快并且你不必每次渲染屏幕（大约60次每秒）的时候都上传一遍数据。
 
-这是通过创建一个*顶点缓冲区*（Vertex Buffer Object，VBO）来完成的：
+这是通过创建一个*顶点缓冲对象*（Vertex Buffer Object，VBO）来完成的：
 
 	GLuint vbo;
 	glGenBuffers(1, &vbo); // 创建1个缓冲区
@@ -71,7 +71,7 @@ OpenGL要求你把所有的顶点通过一个数组传递，一开始看起来�
 - `GL_DYNAMIC_DRAW`：顶点数据会时不时改变，但是会被绘制比改变次数更多的次数。
 - `GL_STREAM_DRAW`：顶点数据在每次绘制时都会改变（例如，用户界面）。
 
-不同的用途将会决定数据存储在显卡里的什么样的内存中以提高性能。例如，以`GL_STREAM_DRAW`为类型的VBOs会存储在内存中以允许快速写入而稍慢的绘制。
+不同的用途将会决定数据存储在显卡里的什么样的内存中以提高性能。例如，以`GL_STREAM_DRAW`为类型的VBO会存储在内存中以允许快速写入而稍慢的绘制。
 
 带有属性的顶点数据现在被复制到了显卡了，但是他们暂时还不能使用。还记得我们可以以任意的顺序拼装数组，并且可以加入任何我们需要的属性吗？所以现在我们需要告诉显卡应该要如何处理这些属性了。与此同时，你也将会看到现代OpenGL到底是怎样的灵活了。
 
@@ -135,7 +135,7 @@ OpenGL要求你把所有的顶点通过一个数组传递，一开始看起来�
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 
-不同于VBOs，你可以简单的传入一个引用给着色器函数而不用激活它或者其他类似处理。`glShaderSource`可以接受一个由多个源码字符串组成的数组，但是通常你不会把源码放在一个`char`数组里。最后一个参数可以传入数组的长度，使用`NULL`会简单的以空字符串作为结尾。
+不同于VBO，你可以简单的传入一个引用给着色器函数而不用激活它或者其他类似处理。`glShaderSource`可以接受一个由多个源码字符串组成的数组，但是通常你不会把源码放在一个`char`数组里。最后一个参数可以传入数组的长度，使用`NULL`会简单的以空字符串作为结尾。
 
 现在只需要编译这段着色器以得到可以在显卡上运行的代码了：
 
@@ -205,55 +205,55 @@ OpenGL要求你把所有的顶点通过一个数组传递，一开始看起来�
 
 最后两个参数可以说是这里最重要的，因为它们定义了属性在顶点数组中是怎么排列的。第一个数字指定了*步长（stride）*，也就是数组中每个位置属性间隔了多少位。0意味着中间没有数据。在目前的情况下每个顶点的位置都是紧跟着下一个顶点的位置的。最后一个参数指定了*偏移（offset）*，也就是从数组最开始经过多少字节才有参数出现。由于现在没有其他的参数，所以也是0。
 
-It is important to know that this function will store not only the stride and the offset, but also the VBO that is currently bound to `GL_ARRAY_BUFFER`. That means that you don't have to explicitly bind the correct VBO when the actual drawing functions are called. This also implies that you can use a different VBO for each attribute.
+要注意的是，这个函数不仅仅会保存步长和偏移量，同时也会保存绑定了`GL_ARRAY_BUFFER`的VBO。这意味着你在调用绘制函数的时候不必显示地绑定正确的VBO。也就是说对于不同的属性你可以使用不同的VBO。
 
-Don't worry if you don't fully understand this yet, as we'll see how to alter this to add more attributes soon enough.
+如果你现在还不能完全理解也不用担心，我们很快就会看到改变这行代码来添加更多的属性。
 
 	glEnableVertexAttribArray(posAttrib);
 
-Last, but not least, the vertex attribute array needs to be enabled.
+最后，但也是最重要的一步，需要激活属性数组。
 
-Vertex Array Objects
+顶点数组对象
 --------
 
-You can imagine that real graphics programs use many different shaders and vertex layouts to take care of a wide variety of needs and special effects. Changing the active shader program is easy enough with a call to `glUseProgram`, but it would be quite inconvenient if you had to set up all of the attributes again every time.
+你可以想象，真正的图形程序要使用很多着色器和顶点布局来处理大量的特殊的效果需求。调用`glUseProgram`可以切换当前的着色程序，但是要反复设置所有的属性是很不方便的。
 
-Luckily, OpenGL solves that problem with *Vertex Array Objects* (VAO). VAOs store all of the links between the attributes and your VBOs with raw vertex data.
+不过很幸运，OpenGL用*顶点数组对象（VAO）*解决了这个问题。VAO存储了所有包含了原始顶点数据的VBO和属性的链接。
 
-A VAO is created in the same way as a VBO:
+VAO和VBO的创建方法是一样的：
 
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 
-To start using it, simply bind it:
+只需要简单的绑定就能使用：
 
 	glBindVertexArray(vao);
 
-As soon as you've bound a certain VAO, every time you call `glVertexAttribPointer`, that information will be stored in that VAO. This makes switching between different vertex data and vertex formats as easy as binding a different VAO! Just remember that a VAO doesn't store any vertex data by itself, it just references the VBOs you've created and how to retrieve the attribute values from them.
+只要你绑定了VAO，每次调用`glVertexAttribPointer`时，数据就会保存到VAO中。这使得在不同的顶点数据和顶点格式之间切换和绑定不同的VAO一样简单！但是要注意VAO本身不保存任何顶点数据，它保存的仅仅是你创建的VBO的引用和如何在其中索引属性。
 
-Since only calls after binding a VAO stick to it, make sure that you've created and bound the VAO at the start of your program.
+由于只有在绑定VAO之后的调用会被保存，所以确定你在程序的开头就创建并绑定了VAO。
 
-Drawing
+绘制
 ========
 
-Now that you've loaded the vertex data, created the shader programs and linked the data to the attributes, you're ready to draw the triangle. The VAO that was used to store the attribute information is already bound, so you don't have to worry about that. All that's left is to simply call `glDrawArrays` in your main loop:
+现在你已经载入了所有的顶点数据，创建好了着色器程序并且与数据中的属性链接起来了，可以开始绘制三角形了。我们用来存储属性信息的VAO已经绑定好了，所以你不必考虑它。剩下的只需要简单的在你的主循环里面调用`glDrawArrays`：
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-The first parameter specifies the kind of primitive (commonly point, line or triangle), the second parameter specifies how many vertices to skip at the beginning and the last parameter specifies the number of **vertices** (not primitives!) to process.
+第一个参数指定了图元的类型（一般是点，线或者三角形），第二个参数指定了一开始要忽略多少个顶点，而最后一个参数指定了需要处理的**顶点**（不是图元！）的个数。
 
-When you run your program now, you should see the following:
+当你的程序运行起来，你会看到如下的显示：
 
 <img src="/media/img/c2_window.png" alt="" />
 
-If you don't see anything, make sure that the shaders have compiled correctly, that the program has linked correctly, that the attribute array has been enabled, that the VAO has been bound before specifying the attributes, that your vertex data is correct and that `glGetError` returns `0`. If you can't find the problem, try comparing your code to [this sample](/content/code/c2_triangle.txt).
+如果你看不到任何显示，确认一下所有的着色器都编译通过了，程序正确链接了，属性数组激活了，VAO绑定了指定的属性，顶点数据是正确的并且`glGetError`返回的是`0`。如果你还是找不到是什么问题，可以跟把你的代码跟 [例子源码](/content/code/c2_triangle.txt)对比。
 
-Uniforms
+Uniform变量
 ========
 
-Right now the white color of the triangle has been hard-coded into the shader code, but what if you wanted to change it after compiling the shader? As it turns out, vertex attributes are not the only way to pass data to shader programs. There is another way to pass data to the shaders called *uniforms*. These are essentially global variables, having the same value for all vertices and/or fragments. To demonstrate how to use these, let's make it possible to change the color of the triangle from the program itself.
+现在我们在着色器代码中写死了三角形的颜色是白色的，但是如果你想要在编译了着色器之后改变它呢？事实上，顶点属性不是传递数据给着色器程序的唯一方法。还有一种能传递数据给着色器的数据，称作*uniform*。它本质上是一个全局变量，在所有的顶点和片段中有同样的值。为了演示如何使用它，我们在程序中来改变三角形的颜色。
 
-By making the color in the fragment shader a uniform, it will end up looking like this:
+为了在片段着色器中创建uniform变量，我们需要做如下修改：
 
 	#version 150
 
@@ -266,22 +266,22 @@ By making the color in the fragment shader a uniform, it will end up looking lik
 		outColor = vec4(triangleColor, 1.0);
 	}
 
-The last component of the output color is transparency, which is not very interesting right now. If you run your program now you'll see that the triangle is black, because the value of `triangleColor` hasn't been set yet.
+输出颜色的最后一个成员是透明度，我们现在对它不感兴趣。如果你现在运行你的代码，三角形将是黑色的，因为`triangleColor`还没有设置。
 
-Changing the value of a uniform is just like setting vertex attributes, you first have to grab the location:
+改变一个uniform变量的值跟设置顶点属性差不多，你需要先找到它的地址：
 
 	GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
 
-The values of uniforms are changed with any of the `glUniformXY` functions, where X is the number of components and Y is the type. Common types are `f` (float), `d` (double) and `i` (integer).
+uniform变量的值可以用类似`glUniformXY`的函数来实现，其中X是成员个数，Y是类型。通常类型有`f`（float），`d`（double）和`i`（integer）。
 
 	glUniform3f(uniColor, 1.0f, 0.0f, 0.0f);
 
-If you run your program now, you'll see that the triangle is red. To make things a little more exciting, try varying the color with the time by doing something like this in your main loop:
+如果你现在再运行程序，你会看到三角形是红色的。为了让它看起来更让人兴奋，我们尝试在主循环中这样修改一下来改变颜色：
 
 	float time = (float)clock() / (float)CLOCKS_PER_SEC;
 	glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 
-Although this example may not be very exciting, it does demonstrate that uniforms are essential for controlling the behaviour of shaders at runtime. Vertex attributes on the other hand are ideal for describing a single vertex.
+也许这个例子看起来还不是特别让人兴奋，但是它确实演示了uniform变量在运行时改变着色器是多么必要。另一方面顶点属性是描述单个顶点更理想的方式。
 
 <div class="livedemo_wrap">
 	<div class="livedemo" id="demo_c2_uniforms" style="background: url('/media/img/c2_window3.png')">
@@ -290,22 +290,22 @@ Although this example may not be very exciting, it does demonstrate that uniform
 	</div>
 </div>
 
-See [the code](/content/code/c2_triangle_uniform.txt) if you have any trouble getting this to work.
+如果在这当中遇到了困难，可以参考一下[源码](/content/code/c2_triangle_uniform.txt)。
 
-Adding some more colors
+添加更多的颜色
 ========
 
-Although uniforms have their place, color is something we'd rather like to specify per corner of the triangle! Let's add a color attribute to the vertices to accomplish this.
+虽然uniform变量很有用，但我们更希望针对三角形的每个角指定颜色！让我们在顶点矩阵中加入颜色属性来完成这个需求吧。
 
-We'll first have to add the extra attributes to the vertex data. Transparency isn't really relevant, so we'll only add the red, green and blue components:
+我们将会先把一些新的数据加入顶点数据中。因为与透明度无关，所以我们只加入红，绿，蓝属性。
 
 	float vertices[] = {
-		 0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
-		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
-		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
+		 0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // 顶点1：红
+		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // 顶点2：绿
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // 顶点3：蓝
 	};
 
-Then we have to change the vertex shader to take it as input and pass it to the fragment shader:
+我们需要修改一下顶点着色器来让它作为输入并且传递给片段着色器：
 
 	#version 150
 
@@ -320,7 +320,7 @@ Then we have to change the vertex shader to take it as input and pass it to the 
 		gl_Position = vec4(position, 0.0, 1.0);
 	}
 
-And `Color` is added as input to the fragment shader:
+变量`Color`被当做输入传给片段着色器：
 
 	#version 150
 
@@ -333,9 +333,9 @@ And `Color` is added as input to the fragment shader:
 		outColor = vec4(Color, 1.0);
 	}
 
-Make sure that the output of the vertex shader and the input of the fragment shader have the same name, or the shaders will not be linked properly.
+确保顶点着色器的输出和片段着色器的输入有相同的名字，否则着色器不会正确的链接。
 
-Now, we just need to alter the attribute pointer code a bit to accommodate for the new `X, Y, R, G, B` attribute order.
+现在我们需要修改一下指向属性的相关代码来适应新的`X, Y, R, G, B`属性顺序了。
 
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
 	glEnableVertexAttribArray(posAttrib);
@@ -347,26 +347,26 @@ Now, we just need to alter the attribute pointer code a bit to accommodate for t
 	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
 						   5*sizeof(float), (void*)(2*sizeof(float)));
 
-The fifth parameter is set to `5*sizeof(float)` now, because each vertex consists of 5 floating point attribute values. The offset of `2*sizeof(float)` for the color attribute is there because each vertex starts with 2 floating point values for the position that it has to skip over.
+第四个参数现在是`5*sizeof(float)`，因为每个顶点数据包含5个浮点数，颜色属性的偏移量是`2*sizeof(float)`，因为每个顶点头两个浮点数是位置，所以需要忽略。
 
-And we're done!
+然后我们就完成了！
 
 <img src="/media/img/c2_window2.png" alt="" />
 
-You should now have a reasonable understanding of vertex attributes and shaders. If you ran into problems, ask in the comments or have a look at the altered [source code](/content/code/c2_color_triangle.txt).
+你现在应该对顶点属性和着色器有了一定的理解了。如果你碰到了问题，你可以在下面留言或者对比一下[示例代码](/content/code/c2_color_triangle.txt)。
 
-Element buffers
+元素缓冲
 ========
 
-Right now, the vertices are specified in the order in which they are drawn. If you wanted to add another triangle, you would have to add 3 additional vertices to the vertex array. There is a way to control the order, which also enables you to reuse existing vertices. This can save you a lot of memory when working with real 3D models later on, because each point is usually occupied by a corner of three triangles!
+现在，顶点按照它们被绘制的顺序排列。如果你想要添加另一个三角形，你需要添加3个另外的顶点到顶点数组中。还有另一个办法来控制顺序，同时也能让你减少存在的定点数。在你后面处理真实的3D模型的时候，这种方式能为你节省很多内存空间，因为每个点通常要被三个三角形同时占用！
 
-An element array is filled with unsigned integers referring to vertices bound to `GL_ARRAY_BUFFER`. If we just want to draw them in the order they are in now, it'll look like this:
+元素数组里保存的是无符号整数指向绑定的`GL_ARRAY_BUFFER`。如果我们只想要按顺序绘制，那么它看起来将是这样：
 
 	GLuint elements[] = {
 		0, 1, 2
 	};
 
-They are loaded into video memory through a VBO just like the vertex data:
+跟顶点数据一样，他们通过VBO被载入显存：
 
 	GLuint ebo;
 	glGenBuffers(1, &ebo);
@@ -377,37 +377,37 @@ They are loaded into video memory through a VBO just like the vertex data:
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 		sizeof(elements), elements, GL_STATIC_DRAW);
 
-The only thing that differs is the target, which is `GL_ELEMENT_ARRAY_BUFFER` this time.
+唯一不同的地方是，现在是`GL_ELEMENT_ARRAY_BUFFER`。
 
-To actually make use of this buffer, you'll have to change the draw command:
+要使用这段缓冲，你需要修改绘制命令：
 
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
-The first parameter is the same as with `glDrawArrays`, but the other ones all refer to the element buffer. The second parameter specifies the number of indices to draw, the third parameter specifies the type of the element data and the last parameter specifies the offset. The only real difference is that you're talking about indices instead of vertices now.
+第一个参数和`glDrawArrays`一样，但是其他几个参数都跟元素缓冲相关。第二个参数指定了要绘制索引的个数，第三个参数指定了元素数据的类型，而最后一个参数指定了偏移量。真正不同的地方是在于，你现在指定的是索引而不是顶点了。
 
-To see how an element buffer can be beneficial, let's try drawing a rectangle using two triangles. We'll start by doing it without an element buffer.
+为了看到使用元素缓冲的优点，让我们尝试使用两个三角形来绘制一个长方形。我们一开始先不使用元素缓冲。
 
 	float vertices[] = {
-		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 左上
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // 右上
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
 
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
-		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
+		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // 左下
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // 左上
 	};
 
-By calling `glDrawArrays` instead of `glDrawElements` like before, the element buffer will simply be ignored:
+像我们之前一样，通过调用`glDrawArrays`而不是`glDrawElements`，元素缓冲会被忽略：
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-The rectangle is rendered as it should, but the repetition of vertex data is a waste of memory. Using an element buffer allows you to reuse data:
+长方形会按照它的样子绘制出来，但是顶点数据中的重复是在对内存空间的浪费。使用元素缓冲可以让你减少数据：
 
 	float vertices[] = {
-		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 左上
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // 右上
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
+		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // 左下
 	};
 
 	...
@@ -421,17 +421,17 @@ The rectangle is rendered as it should, but the repetition of vertex data is a w
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-The element buffer still specifies 6 vertices to form 2 triangles like before, but now we're able to reuse vertices! This may not seem like much of a big deal at this point, but when your graphics application loads many models into the relatively small graphics memory, element buffers will be an important area of optimization.
+元素缓冲仍然指定了6个顶点来保证跟之前一样的2个三角形，但是现在我们可以减少顶点数了！现在看起来这并不是什么大事，但是当你的图像程序载入了许多模型到有限的显存里的时候，元素缓冲可以带来相当大的性能提升。
 
 <img src="/media/img/c2_window4.png" alt="" />
 
-If you run into trouble, have a look at the full [source code](/content/code/c2_triangle_elements.txt).
+如果你遇到了问题，可以查看完整的[源代码](/content/code/c2_triangle_elements.txt)。
 
-This chapter has covered all of the core principles of drawing things with OpenGL and it's absolutely essential that you have a good understanding of them before continuing. Therefore I advise you to do the exercises below before diving into [textures](/textures).
+这一章涵盖了使用OpenGL渲染的核心步骤，并且这些步骤是必不可少的，所以你必须完全理解它们才能继续学习。所以我建议你在深入学习[纹理](/textures)之前，先完成下面的练习。
 
-Exercises
+练习
 ========
 
-- Alter the vertex shader so that the triangle is upside down. ([Solution](/content/code/c2_exercise_1.txt))
-- Invert the colors of the triangle by altering the fragment shader. ([Solution](/content/code/c2_exercise_2.txt))
-- Change the program so that each vertex has only one color value, determining the shade of gray. ([Solution](/content/code/c2_exercise_3.txt))
+- 修改顶点着色器让三角形倒过来。（[答案](/content/code/c2_exercise_1.txt)）
+- 修改片段着色器让三角形的颜色反转。（[答案](/content/code/c2_exercise_2.txt)）
+- 修改程序让每个顶点只有一个颜色，确定灰色的阴影。（[答案](/content/code/c2_exercise_3.txt)）
